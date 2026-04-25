@@ -14,7 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      goals: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lenses: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          is_starter: boolean
+          name: string
+          prompts: string[]
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          is_starter?: boolean
+          name: string
+          prompts?: string[]
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          is_starter?: boolean
+          name?: string
+          prompts?: string[]
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reflections: {
+        Row: {
+          answer: string | null
+          created_at: string
+          id: string
+          lens_id: string | null
+          lens_name: string | null
+          mood: string | null
+          palette: string[]
+          question: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          lens_id?: string | null
+          lens_name?: string | null
+          mood?: string | null
+          palette?: string[]
+          question: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          lens_id?: string | null
+          lens_name?: string | null
+          mood?: string | null
+          palette?: string[]
+          question?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_lens_id_fkey"
+            columns: ["lens_id"]
+            isOneToOne: false
+            referencedRelation: "lenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_palettes: {
+        Row: {
+          colors: string[]
+          created_at: string
+          id: string
+          name: string | null
+          user_id: string
+        }
+        Insert: {
+          colors: string[]
+          created_at?: string
+          id?: string
+          name?: string | null
+          user_id: string
+        }
+        Update: {
+          colors?: string[]
+          created_at?: string
+          id?: string
+          name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
