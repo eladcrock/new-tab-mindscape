@@ -8,14 +8,13 @@ type Input = {
   goals: GoalRef[];
   lenses: LensRef[]; // enabled lens pool
   recentReflections: ReflectionRef[]; // up to ~10
+  preferredLensId?: string | null; // randomly pre-picked lens to bias toward
 };
 
 type Output = {
   lensId: string | null;
   lensName: string;
   question: string;
-  palette: string[];
-  mood: string;
 };
 
 export const generateLensPrompt = createServerFn({ method: "POST" })
@@ -25,13 +24,25 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
       goals: Array.isArray(input.goals) ? input.goals.slice(0, 10) : [],
       lenses: Array.isArray(input.lenses) ? input.lenses.slice(0, 60) : [],
       recentReflections: Array.isArray(input.recentReflections) ? input.recentReflections.slice(0, 10) : [],
+      preferredLensId: typeof input.preferredLensId === "string" ? input.preferredLensId : null,
     };
   })
   .handler(async ({ data }): Promise<Output> => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const lensSummary = data.lenses.map((l) => `- [${l.id}] ${l.name}${l.theme ? ` (${l.theme})` : ""}`).join("\n");
+    // Randomize lens order so the model sees a different framing each call.
+    const shuffled = [...data.lenses].sort(() => Math.random() - 0.5);
+    // If a preferred lens was randomly chosen by the client, bring it to the front.
+    if (data.preferredLensId) {
+      const idx = shuffled.findIndex((l) => l.id === data.preferredLensId);
+      if (idx > 0) {
+        const [picked] = shuffled.splice(idx, 1);
+        shuffled.unshift(picked);
+      }
+    }
+
+    const lensSummary = shuffled.map((l) => `- [${l.id}] ${l.name}${l.theme ? ` — ${l.theme}` : ""}`).join("\n");
     const goalSummary = data.goals.length
       ? data.goals.map((g) => `- ${g.title}${g.description ? `: ${g.description}` : ""}`).join("\n")
       : "(no goals set yet)";
@@ -42,19 +53,21 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
               `${i + 1}. [${r.lens_name ?? "lens"}] Q: ${r.question}\n   A: ${r.answer ? r.answer.slice(0, 240) : "(skipped)"}`,
           )
           .join("\n")
-      : "(no past reflections)";
+      : "(no past reflections)"
+    ;
+
+    const preferred = data.preferredLensId
+      ? `Strongly prefer the lens at the top of the list (id: ${data.preferredLensId}) unless it clearly does not fit.`
+      : `Pick whichever lens feels freshest given recent reflections.`;
 
     const systemPrompt = `You are a thoughtful reflective companion built on Jesse Schell's "Deck of Lenses" concept, adapted for any creative work.
-You greet the user when they open a new tab with ONE meaningful, thought-provoking question drawn from their available lenses.
-You also choose a 4-color palette (Color Hunt style) whose mood matches the question's emotional tone.
+When the user opens a new tab, you greet them with ONE meaningful, thought-provoking question drawn from their available lenses.
 
 Rules:
-- Pick exactly ONE lens from the provided list. Use its id.
-- The question must be specific, open-ended, and personal. Tie it to the user's goals or recent reflections when possible — but do NOT repeat any recent question.
-- Vary lenses across visits. Avoid the lens used in the most recent reflection unless clearly the best fit.
-- Question: 1 sentence, max 25 words, no preamble.
-- Palette: 4 hex colors (e.g. #1A1A2E). They must visually harmonize and match the question's mood.
-- Mood: one short word (calm, energetic, melancholy, hopeful, focused, playful, somber, bold, gentle, etc.).`;
+- ${preferred}
+- Use the lens id exactly as provided.
+- The question must be specific, open-ended, and personal. Tie it to the user's goals or recent reflections when natural — but do NOT repeat any recent question.
+- Question: 1 sentence, max 25 words, no preamble, no quotes.`;
 
     const userPrompt = `# User goals
 ${goalSummary}
@@ -65,7 +78,7 @@ ${lensSummary}
 # Recent reflections (most recent first)
 ${recentSummary}
 
-Now produce one new reflective question with a matching palette.`;
+Now produce one new reflective question.`;
 
     const body = {
       model: "google/gemini-3-flash-preview",
@@ -78,22 +91,15 @@ Now produce one new reflective question with a matching palette.`;
           type: "function",
           function: {
             name: "deliver_lens_prompt",
-            description: "Return one lens-based question with a matching palette",
+            description: "Return one lens-based reflective question",
             parameters: {
               type: "object",
               properties: {
                 lensId: { type: "string", description: "id of the chosen lens from the list" },
                 lensName: { type: "string" },
                 question: { type: "string" },
-                palette: {
-                  type: "array",
-                  items: { type: "string", description: "hex color like #1A2B3C" },
-                  minItems: 4,
-                  maxItems: 4,
-                },
-                mood: { type: "string" },
               },
-              required: ["lensId", "lensName", "question", "palette", "mood"],
+              required: ["lensId", "lensName", "question"],
               additionalProperties: false,
             },
           },
@@ -134,7 +140,5 @@ Now produce one new reflective question with a matching palette.`;
       lensId: typeof parsed.lensId === "string" ? parsed.lensId : null,
       lensName: String(parsed.lensName ?? "Reflection"),
       question: String(parsed.question ?? "What matters most to you right now?"),
-      palette: Array.isArray(parsed.palette) ? parsed.palette.map((c: unknown) => String(c)) : [],
-      mood: String(parsed.mood ?? "open"),
     };
   });
