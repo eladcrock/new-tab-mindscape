@@ -1,7 +1,7 @@
 // Unified data layer: routes to Supabase when authed, localStorage when not.
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
-import { ensureLocalSeed, localStore, uid, type LocalGoal, type LocalReflection, type LocalPalette } from "./local-store";
+import { ensureLocalSeed, localStore, uid, type LocalGoal, type LocalReflection } from "./local-store";
 import { useEffect, useCallback, useState } from "react";
 import type { Lens } from "./starter-lenses";
 
