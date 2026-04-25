@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PalettesRouteImport } from './routes/palettes'
 import { Route as LensesRouteImport } from './routes/lenses'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as GoalsRouteImport } from './routes/goals'
@@ -18,11 +17,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 
-const PalettesRoute = PalettesRouteImport.update({
-  id: '/palettes',
-  path: '/palettes',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LensesRoute = LensesRouteImport.update({
   id: '/lenses',
   path: '/lenses',
@@ -66,7 +60,6 @@ export interface FileRoutesByFullPath {
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
-  '/palettes': typeof PalettesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
@@ -76,7 +69,6 @@ export interface FileRoutesByTo {
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
-  '/palettes': typeof PalettesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -87,7 +79,6 @@ export interface FileRoutesById {
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
-  '/palettes': typeof PalettesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
@@ -99,18 +90,9 @@ export interface FileRouteTypes {
     | '/goals'
     | '/history'
     | '/lenses'
-    | '/palettes'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/chat'
-    | '/goals'
-    | '/history'
-    | '/lenses'
-    | '/palettes'
-    | '/api/chat'
+  to: '/' | '/auth' | '/chat' | '/goals' | '/history' | '/lenses' | '/api/chat'
   id:
     | '__root__'
     | '/'
@@ -119,7 +101,6 @@ export interface FileRouteTypes {
     | '/goals'
     | '/history'
     | '/lenses'
-    | '/palettes'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
@@ -130,19 +111,11 @@ export interface RootRouteChildren {
   GoalsRoute: typeof GoalsRoute
   HistoryRoute: typeof HistoryRoute
   LensesRoute: typeof LensesRoute
-  PalettesRoute: typeof PalettesRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/palettes': {
-      id: '/palettes'
-      path: '/palettes'
-      fullPath: '/palettes'
-      preLoaderRoute: typeof PalettesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/lenses': {
       id: '/lenses'
       path: '/lenses'
@@ -202,18 +175,8 @@ const rootRouteChildren: RootRouteChildren = {
   GoalsRoute: GoalsRoute,
   HistoryRoute: HistoryRoute,
   LensesRoute: LensesRoute,
-  PalettesRoute: PalettesRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

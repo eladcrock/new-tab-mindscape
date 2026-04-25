@@ -1,7 +1,7 @@
 // Unified data layer: routes to Supabase when authed, localStorage when not.
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
-import { ensureLocalSeed, localStore, uid, type LocalGoal, type LocalReflection, type LocalPalette } from "./local-store";
+import { ensureLocalSeed, localStore, uid, type LocalGoal, type LocalReflection } from "./local-store";
 import { useEffect, useCallback, useState } from "react";
 import type { Lens } from "./starter-lenses";
 
@@ -16,7 +16,7 @@ export type Reflection = {
   mood: string | null;
   created_at: string;
 };
-export type Palette = { id: string; colors: string[]; name: string | null; created_at: string };
+
 
 export function useDataMode() {
   const { user, loading } = useAuth();
@@ -204,44 +204,3 @@ export function useReflections() {
   return { reflections, loading, add, updateAnswer, remove, refresh };
 }
 
-// ----- Palettes -----
-export function usePalettes() {
-  const { authed, userId } = useDataMode();
-  const [palettes, setPalettes] = useState<Palette[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    if (authed && userId) {
-      const { data } = await supabase.from("saved_palettes").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-      setPalettes((data ?? []) as Palette[]);
-    } else {
-      ensureLocalSeed();
-      setPalettes(localStore.getPalettes().map((p) => ({ ...p, name: p.name ?? null })));
-    }
-    setLoading(false);
-  }, [authed, userId]);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  const save = async (colors: string[], name?: string) => {
-    if (authed && userId) {
-      await supabase.from("saved_palettes").insert({ user_id: userId, colors, name: name ?? null });
-    } else {
-      const p: LocalPalette = { id: uid(), colors, name, created_at: new Date().toISOString() };
-      localStore.addPalette(p);
-    }
-    await refresh();
-  };
-
-  const remove = async (id: string) => {
-    if (authed && userId) {
-      await supabase.from("saved_palettes").delete().eq("id", id);
-    } else {
-      localStore.removePalette(id);
-    }
-    await refresh();
-  };
-
-  return { palettes, loading, save, remove, refresh };
-}

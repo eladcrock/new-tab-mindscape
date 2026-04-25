@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useReflections } from "@/lib/data-hooks";
-import { gradientFromPalette } from "@/lib/palette-utils";
+
 
 export const Route = createFileRoute("/history")({
   head: () => ({
@@ -37,7 +37,6 @@ function HistoryPage() {
       <div className="space-y-3">
         {filtered.map((r) => (
           <Card key={r.id} className="overflow-hidden">
-            <div className="h-2" style={{ backgroundImage: gradientFromPalette(r.palette.length ? r.palette : ["#888","#aaa","#ccc","#eee"]) }} />
             <div className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground">
