@@ -13,8 +13,10 @@ import { Route as PalettesRouteImport } from './routes/palettes'
 import { Route as LensesRouteImport } from './routes/lenses'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api.chat'
 
 const PalettesRoute = PalettesRouteImport.update({
   id: '/palettes',
@@ -36,6 +38,11 @@ const GoalsRoute = GoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -46,54 +53,85 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/goals' | '/history' | '/lenses' | '/palettes'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/goals' | '/history' | '/lenses' | '/palettes'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
     | '/auth'
+    | '/chat'
     | '/goals'
     | '/history'
     | '/lenses'
     | '/palettes'
+    | '/api/chat'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/goals'
+    | '/history'
+    | '/lenses'
+    | '/palettes'
+    | '/api/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/goals'
+    | '/history'
+    | '/lenses'
+    | '/palettes'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ChatRoute: typeof ChatRoute
   GoalsRoute: typeof GoalsRoute
   HistoryRoute: typeof HistoryRoute
   LensesRoute: typeof LensesRoute
   PalettesRoute: typeof PalettesRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -126,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -140,16 +185,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ChatRoute: ChatRoute,
   GoalsRoute: GoalsRoute,
   HistoryRoute: HistoryRoute,
   LensesRoute: LensesRoute,
   PalettesRoute: PalettesRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
