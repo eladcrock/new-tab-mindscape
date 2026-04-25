@@ -9,8 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PalettesRouteImport } from './routes/palettes'
+import { Route as LensesRouteImport } from './routes/lenses'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PalettesRoute = PalettesRouteImport.update({
+  id: '/palettes',
+  path: '/palettes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LensesRoute = LensesRouteImport.update({
+  id: '/lenses',
+  path: '/lenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoalsRoute = GoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +49,90 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/goals': typeof GoalsRoute
+  '/history': typeof HistoryRoute
+  '/lenses': typeof LensesRoute
+  '/palettes': typeof PalettesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/goals': typeof GoalsRoute
+  '/history': typeof HistoryRoute
+  '/lenses': typeof LensesRoute
+  '/palettes': typeof PalettesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/goals': typeof GoalsRoute
+  '/history': typeof HistoryRoute
+  '/lenses': typeof LensesRoute
+  '/palettes': typeof PalettesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/auth' | '/goals' | '/history' | '/lenses' | '/palettes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/auth' | '/goals' | '/history' | '/lenses' | '/palettes'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/goals'
+    | '/history'
+    | '/lenses'
+    | '/palettes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  GoalsRoute: typeof GoalsRoute
+  HistoryRoute: typeof HistoryRoute
+  LensesRoute: typeof LensesRoute
+  PalettesRoute: typeof PalettesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/palettes': {
+      id: '/palettes'
+      path: '/palettes'
+      fullPath: '/palettes'
+      preLoaderRoute: typeof PalettesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lenses': {
+      id: '/lenses'
+      path: '/lenses'
+      fullPath: '/lenses'
+      preLoaderRoute: typeof LensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goals': {
+      id: '/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +145,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  GoalsRoute: GoalsRoute,
+  HistoryRoute: HistoryRoute,
+  LensesRoute: LensesRoute,
+  PalettesRoute: PalettesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
