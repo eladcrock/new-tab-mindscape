@@ -153,12 +153,24 @@ function PalettesPage() {
               <Plus className="h-4 w-4 mr-1.5" /> Save
             </Button>
           </div>
-          {colorsInput && (
-            <div
-              className="mt-3 h-12 rounded-lg border border-border"
-              style={{ background: paletteCss(parseColors(colorsInput)) }}
-              aria-hidden
-            />
+          {colorsInput && parseColors(colorsInput).length > 0 && (
+            <div className="mt-3">
+              <div
+                className="h-12 rounded-lg border border-border"
+                style={{ background: paletteCss(parseColors(colorsInput)) }}
+                aria-hidden
+              />
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {parseColors(colorsInput).map((c, i) => (
+                  <span
+                    key={`${c}-${i}`}
+                    className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-border bg-muted"
+                  >
+                    {c.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
