@@ -69,14 +69,17 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     if (messages.length > 0) return;
     // Seed a starter assistant turn
     const greet = async () => {
+      const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
+      const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
+      const activeGoals = goals.filter((g) => g.active);
       const greeting =
-        goals.filter((g) => g.active).length === 0
-          ? "Hey — I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?"
-          : `Welcome back. Of your active goals${goals.filter((g) => g.active).length > 1 ? "" : ""}, which one feels most alive today — and what part of it has your attention?`;
+        activeGoals.length === 0
+          ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
+          : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
       await append({ role: "assistant", content: greeting });
     };
     greet();
-  }, [activeId, messages.length, streaming, goals, append]);
+  }, [activeId, messages.length, streaming, goals, append, displayName]);
 
   const send = async () => {
     if (!input.trim() || !activeId || streaming) return;
