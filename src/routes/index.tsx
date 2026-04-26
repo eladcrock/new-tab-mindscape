@@ -72,6 +72,7 @@ function NewTabHome() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [gradient, setGradient] = useState<Gradient>(() => randomGradient());
+  const [streak, setStreak] = useState<StreakState>(() => readStreak());
   const initialized = useRef(false);
 
   const enabledLenses = lenses.filter((l) => l.enabled);
