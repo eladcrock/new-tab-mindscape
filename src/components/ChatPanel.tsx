@@ -34,15 +34,21 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const [streaming, setStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previousActiveId = useRef<string | null>(null);
+  const greetedRef = useRef<Set<string>>(new Set());
+  const creatingRef = useRef(false);
 
   // Auto-pick or create a conversation
   useEffect(() => {
     if (activeId) return;
     if (conversations.length > 0) {
       setActiveId(conversations[0].id);
-    } else {
-      create("New conversation").then(setActiveId);
+      return;
     }
+    if (creatingRef.current) return;
+    creatingRef.current = true;
+    create("New conversation")
+      .then((id) => setActiveId(id))
+      .finally(() => { creatingRef.current = false; });
   }, [conversations, activeId, create]);
 
   // Summarize the previous conversation when the user switches away
