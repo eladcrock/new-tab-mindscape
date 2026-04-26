@@ -195,6 +195,55 @@ function NewTabHome() {
 
       <main className="flex-1 flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-2xl">
+          {(() => {
+            const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
+            const activeGoals = goals.filter((g) => g.active);
+            const recentConvos = conversations.filter((c) => c.summary).slice(0, 3);
+            if (!firstName && activeGoals.length === 0 && insights.length === 0 && recentConvos.length === 0) {
+              return null;
+            }
+            return (
+              <div className={`mb-5 px-1 ${fgClass}`}>
+                <h2 className="text-lg sm:text-xl font-medium tracking-tight">
+                  {firstName ? `Hello, ${firstName}.` : "Welcome back."}
+                </h2>
+                <p className={`mt-1 text-sm ${mutedClass}`}>
+                  {activeGoals.length > 0 && (
+                    <>You have {activeGoals.length} active goal{activeGoals.length === 1 ? "" : "s"}</>
+                  )}
+                  {activeGoals.length > 0 && insights.length > 0 && " · "}
+                  {insights.length > 0 && (
+                    <>{insights.length} insight{insights.length === 1 ? "" : "s"} the agent remembers</>
+                  )}
+                  {(activeGoals.length > 0 || insights.length > 0) && recentConvos.length > 0 && " · "}
+                  {recentConvos.length > 0 && (
+                    <>{recentConvos.length} recent conversation{recentConvos.length === 1 ? "" : "s"}</>
+                  )}
+                </p>
+                {recentConvos.length > 0 && (
+                  <div className={`mt-3 rounded-xl p-3 backdrop-blur-md border ${isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"}`}>
+                    <div className={`flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] mb-2 ${mutedClass}`}>
+                      <MessageSquare className="h-3 w-3" /> Where you left off
+                    </div>
+                    <ul className="space-y-1.5">
+                      {recentConvos.map((c) => (
+                        <li key={c.id} className="text-xs">
+                          {c.title && <span className="font-medium">{c.title}: </span>}
+                          <span className={mutedClass}>{c.summary}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      to="/chat"
+                      className={`mt-2 inline-block text-[11px] underline-offset-4 hover:underline ${mutedClass}`}
+                    >
+                      Continue in chat →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div
             className={`rounded-3xl p-8 sm:p-12 backdrop-blur-md border shadow-xl ${
               isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
