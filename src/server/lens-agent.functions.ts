@@ -102,8 +102,11 @@ Rules:
     const userPrompt = `# User goals
 ${goalSummary}
 
-# Available lenses
+# Available lenses (★ = previously liked by user)
 ${lensSummary}
+
+# User's most-liked lenses
+${likedSummary}
 
 # Recent reflections (most recent first)
 ${recentSummary}
