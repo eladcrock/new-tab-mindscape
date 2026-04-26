@@ -35,7 +35,26 @@ type LensPrompt = {
   question: string;
 };
 
+async function saveCurrentGradient(gradient: Gradient, userId: string | null | undefined) {
+  if (!userId) {
+    toast.error("Sign in to save");
+    return;
+  }
+  const matches = gradient.css.match(/#[0-9a-fA-F]{6}/g);
+  if (!matches || matches.length < 2) {
+    toast.error("Could not parse gradient");
+    return;
+  }
+  const colors = matches.slice(0, 2);
+  const { error } = await supabase
+    .from("saved_palettes")
+    .insert({ user_id: userId, name: null, colors });
+  if (error) toast.error("Could not save");
+  else toast.success("Gradient saved to palettes");
+}
+
 function NewTabHome() {
+  const { user } = useAuth();
   const { goals } = useGoals();
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
