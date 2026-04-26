@@ -34,15 +34,21 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const [streaming, setStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previousActiveId = useRef<string | null>(null);
+  const greetedRef = useRef<Set<string>>(new Set());
+  const creatingRef = useRef(false);
 
   // Auto-pick or create a conversation
   useEffect(() => {
     if (activeId) return;
     if (conversations.length > 0) {
       setActiveId(conversations[0].id);
-    } else {
-      create("New conversation").then(setActiveId);
+      return;
     }
+    if (creatingRef.current) return;
+    creatingRef.current = true;
+    create("New conversation")
+      .then((id) => setActiveId(id))
+      .finally(() => { creatingRef.current = false; });
   }, [conversations, activeId, create]);
 
   // Summarize the previous conversation when the user switches away
@@ -63,22 +69,22 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
 
-  // Greet on empty conversation
+  // Greet on empty conversation (once per conversation)
   useEffect(() => {
     if (!activeId || streaming) return;
     if (messages.length > 0) return;
-    // Seed a starter assistant turn
-    const greet = async () => {
-      const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
-      const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
-      const activeGoals = goals.filter((g) => g.active);
-      const greeting =
-        activeGoals.length === 0
-          ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
-          : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
-      await append({ role: "assistant", content: greeting });
-    };
-    greet();
+    if (greetedRef.current.has(activeId)) return;
+    greetedRef.current.add(activeId);
+    const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
+    const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
+    const activeGoals = goals.filter((g) => g.active);
+    const greeting =
+      activeGoals.length === 0
+        ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
+        : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
+    append({ role: "assistant", content: greeting }).catch(() => {
+      greetedRef.current.delete(activeId);
+    });
   }, [activeId, messages.length, streaming, goals, append, displayName]);
 
   const send = async () => {
@@ -86,22 +92,22 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     const text = input.trim();
     setInput("");
 
-    // Persist user msg
-    await append({ role: "user", content: text });
-
-    // Build streaming placeholder
+    // Snapshot messages BEFORE any mutations so optimistic updates are stable
+    const baseMessages = messages;
+    const optimisticUser: ChatMessage = {
+      id: "optimistic-user-" + Date.now(),
+      role: "user",
+      content: text,
+      created_at: new Date().toISOString(),
+    };
     const placeholder: ChatMessage = {
       id: "streaming-" + Date.now(),
       role: "assistant",
       content: "",
       created_at: new Date().toISOString(),
     };
-    // local-only update for live tokens
-    setLocal([
-      ...messages,
-      { id: "u-" + Date.now(), role: "user", content: text, created_at: new Date().toISOString() },
-      placeholder,
-    ]);
+    // Show user message + empty assistant immediately
+    setLocal([...baseMessages, optimisticUser, placeholder]);
 
     let acc = "";
     setStreaming(true);
@@ -115,9 +121,8 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
         .slice(0, 6)
         .map((c) => ({ title: c.title, summary: c.summary ?? null, updated_at: c.updated_at }));
 
-      // Build the message history we send (current persisted messages + new user turn)
       const history = [
-        ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        ...baseMessages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
         { role: "user" as const, content: text },
       ];
 
@@ -136,15 +141,13 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
         {
           onDelta: (chunk) => {
             acc += chunk;
-            setLocal([
-              ...messages,
-              { id: "u-live", role: "user", content: text, created_at: new Date().toISOString() },
-              { ...placeholder, content: acc },
-            ]);
+            setLocal([...baseMessages, optimisticUser, { ...placeholder, content: acc }]);
           },
         },
       );
 
+      // Persist both turns AFTER streaming completes, then refresh from DB
+      await append({ role: "user", content: text });
       if (acc.trim()) {
         await append({ role: "assistant", content: acc.trim() });
       } else {
@@ -152,12 +155,12 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       }
 
       // Background: extract durable insights every few turns
-      const turnCount = messages.length + 2; // we added 2
+      const turnCount = baseMessages.length + 2;
       if (turnCount >= 4 && turnCount % 4 === 0) {
         callAuthed(extractInsights, {
           data: {
             messages: [
-              ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+              ...baseMessages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
               { role: "user", content: text },
               { role: "assistant", content: acc.trim() },
             ],
