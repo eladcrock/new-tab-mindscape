@@ -36,16 +36,19 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const previousActiveId = useRef<string | null>(null);
   const greetedRef = useRef<Set<string>>(new Set());
   const creatingRef = useRef(false);
+  const autoPickedRef = useRef(false);
 
-  // Auto-pick or create a conversation
+  // Auto-pick the most recent conversation (or create one only if none exist).
+  // Runs at most once per mount to avoid creating duplicate empty conversations.
   useEffect(() => {
-    if (activeId) return;
+    if (activeId || autoPickedRef.current || creatingRef.current) return;
     if (conversations.length > 0) {
+      autoPickedRef.current = true;
       setActiveId(conversations[0].id);
       return;
     }
-    if (creatingRef.current) return;
     creatingRef.current = true;
+    autoPickedRef.current = true;
     create("New conversation")
       .then((id) => setActiveId(id))
       .finally(() => { creatingRef.current = false; });
