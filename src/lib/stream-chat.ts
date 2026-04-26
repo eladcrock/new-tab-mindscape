@@ -1,4 +1,6 @@
 // Stream from /api/chat (POST, SSE). Token-by-token deltas.
+import { supabase } from "@/integrations/supabase/client";
+
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type Ctx = {
   goals?: { title: string; description?: string }[];
@@ -11,9 +13,16 @@ export async function streamChat(
   payload: { messages: ChatMsg[]; context: Ctx },
   opts: { onDelta: (s: string) => void; signal?: AbortSignal },
 ): Promise<void> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error("You must be signed in to chat.");
+
   const res = await fetch("/api/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
     signal: opts.signal,
   });
