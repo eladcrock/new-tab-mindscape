@@ -183,11 +183,27 @@ function PalettesPage() {
             {palettes.map((p) => (
               <li key={p.id} className="rounded-2xl border border-border bg-card overflow-hidden">
                 <div
-                  className="h-20 cursor-pointer"
+                  className="h-12 cursor-pointer"
                   style={{ background: paletteCss(p.colors) }}
                   onClick={() => copy(paletteCss(p.colors))}
-                  title="Click to copy CSS"
+                  title="Click to copy CSS gradient"
                 />
+                <div className="flex">
+                  {p.colors.map((c, i) => {
+                    const light = isLightColor(c);
+                    return (
+                      <button
+                        key={`${c}-${i}`}
+                        onClick={() => copy(c)}
+                        style={{ background: c, color: light ? "#111" : "#fff" }}
+                        className="flex-1 h-14 text-[11px] font-mono tracking-wide flex items-end justify-center pb-1.5 hover:opacity-90 transition border-r border-black/5 last:border-r-0"
+                        title="Click to copy hex"
+                      >
+                        {c.toUpperCase()}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
                     <div className="font-medium truncate">
