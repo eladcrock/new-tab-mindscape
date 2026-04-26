@@ -106,6 +106,39 @@ export type Database = {
         }
         Relationships: []
       }
+      lens_likes: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          last_liked_at: string
+          lens_id: string
+          lens_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          last_liked_at?: string
+          lens_id: string
+          lens_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          last_liked_at?: string
+          lens_id?: string
+          lens_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lenses: {
         Row: {
           created_at: string
