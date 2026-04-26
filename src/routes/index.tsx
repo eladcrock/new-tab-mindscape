@@ -36,6 +36,7 @@ function NewTabHome() {
   const { goals } = useGoals();
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
+  const { insights, addMany: addInsights } = useInsights();
 
   const [prompt, setPrompt] = useState<LensPrompt | null>(null);
   const [reflectionId, setReflectionId] = useState<string | null>(null);
