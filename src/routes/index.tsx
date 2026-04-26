@@ -218,6 +218,34 @@ function NewTabHome() {
             </div>
           </div>
 
+          {insights.length > 0 && (
+            <div
+              className={`mt-6 rounded-2xl p-5 backdrop-blur-md border ${
+                isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
+              }`}
+            >
+              <div className={`flex items-center gap-2 text-xs uppercase tracking-[0.18em] mb-3 ${mutedClass}`}>
+                <Sparkles className="h-3.5 w-3.5" /> What the agent has learned about you
+              </div>
+              <ul className="space-y-2">
+                {insights.slice(0, 5).map((i) => (
+                  <li key={i.id} className="text-sm flex gap-2">
+                    <span
+                      className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider ${
+                        i.category === "next_action"
+                          ? isLight ? "bg-white/25" : "bg-neutral-900/15"
+                          : isLight ? "bg-white/10" : "bg-neutral-900/5"
+                      }`}
+                    >
+                      {i.category.replace(/_/g, " ")}
+                    </span>
+                    <span>{i.content}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <p className={`mt-6 text-center text-xs ${mutedClass}`}>
             A new lens, question, and palette every tab.
           </p>
