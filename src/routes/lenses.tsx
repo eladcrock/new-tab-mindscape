@@ -14,7 +14,7 @@ import { useLenses } from "@/lib/data-hooks";
 export const Route = createFileRoute("/lenses")({
   head: () => ({
     meta: [
-      { title: "Your lenses · Lens Tab" },
+      { title: "Your lenses · Focal Lens" },
       { name: "description", content: "Browse the starter lens deck and add your own thinking lenses." },
     ],
   }),

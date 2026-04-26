@@ -12,7 +12,7 @@ import { useReflections } from "@/lib/data-hooks";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Reflection history · Lens Tab" },
+      { title: "Reflection history · Focal Lens" },
       { name: "description", content: "Search and revisit your past reflections." },
     ],
   }),
