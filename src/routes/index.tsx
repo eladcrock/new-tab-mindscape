@@ -57,10 +57,12 @@ async function saveCurrentGradient(gradient: Gradient, userId: string | null | u
 
 function NewTabHome() {
   const { user } = useAuth();
+  const { displayName } = useProfile();
   const { goals } = useGoals();
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
   const { insights, addMany: addInsights } = useInsights();
+  const { conversations } = useConversations();
   const { likes, like: toggleLike, isLiked } = useLensLikes();
 
   const [prompt, setPrompt] = useState<LensPrompt | null>(null);
