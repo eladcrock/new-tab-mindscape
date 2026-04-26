@@ -10,6 +10,7 @@ import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useInsights } from "@/lib/chat-hooks";
 import { generateLensPrompt } from "@/server/lens-agent.functions";
 import { extractInsightsFromReflection } from "@/server/reflection-insights.functions";
+import { callAuthed } from "@/lib/call-authed";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 
 export const Route = createFileRoute("/")({
@@ -68,7 +69,7 @@ function NewTabHome() {
           // ColorHunt-style randomness: pre-pick a random lens client-side
           const picked = enabledLenses[Math.floor(Math.random() * enabledLenses.length)];
           try {
-            const out = await generateLensPrompt({
+            const out = await callAuthed(generateLensPrompt, {
               data: {
                 goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description ?? undefined })),
                 lenses: enabledLenses.map((l) => ({ id: l.id, name: l.name, theme: l.theme, prompts: l.prompts })),
@@ -123,7 +124,7 @@ function NewTabHome() {
       await updateAnswer(reflectionId, answer.trim());
       toast.success("Reflection saved");
       // Background: mine the reflection for personalized, actionable insights.
-      extractInsightsFromReflection({
+      callAuthed(extractInsightsFromReflection, {
         data: {
           reflection: {
             question: prompt?.question ?? "",
