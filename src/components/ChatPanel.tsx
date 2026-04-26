@@ -187,8 +187,19 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   };
 
   const newConversation = async () => {
-    const id = await create("New conversation");
-    setActiveId(id);
+    if (creatingRef.current) return;
+    // If the current conversation is already empty, just keep it.
+    if (activeId && messages.length === 0) return;
+    // Reuse any existing empty conversation if one exists.
+    // We can detect "empty" cheaply by title === "New conversation" with no summary;
+    // for the active one we know via messages.length above.
+    creatingRef.current = true;
+    try {
+      const id = await create("New conversation");
+      setActiveId(id);
+    } finally {
+      creatingRef.current = false;
+    }
   };
 
   const deleteConversation = async (id: string) => {
