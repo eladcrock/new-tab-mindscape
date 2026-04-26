@@ -24,7 +24,8 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const { lenses } = useLenses();
   const { reflections } = useReflections();
   const { insights, addMany: addInsights } = useInsights();
-  const { conversations, create, remove } = useConversations();
+  const { conversations, create, remove, refresh: refreshConversations } = useConversations();
+  const { displayName } = useProfile();
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, append, setLocal, refresh } = useMessages(activeId);
@@ -32,6 +33,7 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const previousActiveId = useRef<string | null>(null);
 
   // Auto-pick or create a conversation
   useEffect(() => {
@@ -42,6 +44,19 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       create("New conversation").then(setActiveId);
     }
   }, [conversations, activeId, create]);
+
+  // Summarize the previous conversation when the user switches away
+  useEffect(() => {
+    const prior = previousActiveId.current;
+    previousActiveId.current = activeId;
+    if (!prior || prior === activeId) return;
+    // Fire and forget — the server function only summarizes if there are >= 2 turns
+    callAuthed(summarizeConversation, { data: { conversationId: prior } })
+      .then((r) => {
+        if (r.summary) refreshConversations();
+      })
+      .catch((e) => console.warn("conversation summary failed", e));
+  }, [activeId, refreshConversations]);
 
   // Auto-scroll
   useEffect(() => {
