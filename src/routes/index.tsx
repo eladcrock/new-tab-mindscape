@@ -133,7 +133,7 @@ function NewTabHome() {
         setLoading(false);
       }
     },
-    [loading, enabledLenses, goals, reflections, addReflection],
+    [loading, enabledLenses, goals, reflections, addReflection, likes, isLiked],
   );
 
   // Auto-load first prompt once data is ready
