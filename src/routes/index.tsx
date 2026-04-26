@@ -289,6 +289,23 @@ function NewTabHome() {
                   />
                 </button>
               )}
+              {streak.total > 0 && (
+                <span
+                  className={`ml-auto inline-flex items-center gap-2 normal-case tracking-normal text-[11px] px-2 py-0.5 rounded-full ${
+                    isLight ? "bg-white/15" : "bg-neutral-900/10"
+                  }`}
+                  title={`${streak.points} points · ${streak.total} reflections${streak.streak > 1 ? ` · ${streak.streak}-day streak` : ""}`}
+                >
+                  <Trophy className="h-3 w-3" />
+                  {streak.points} pts
+                  {streak.streak > 1 && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <Flame className="h-3 w-3" />
+                      {streak.streak}
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight">
               {loading && !prompt ? (
