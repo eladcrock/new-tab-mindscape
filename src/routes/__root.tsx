@@ -42,6 +42,23 @@ export const Route = createRootRoute({
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Focal Lens" },
+      // Baseline security headers (the ones that browsers honor via <meta>).
+      // X-Frame-Options / X-Content-Type-Options must be set as real HTTP headers
+      // by the hosting layer; these meta equivalents cover the in-document risks.
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
+      {
+        httpEquiv: "Content-Security-Policy",
+        content:
+          "default-src 'self'; " +
+          "script-src 'self' 'unsafe-inline'; " +
+          "style-src 'self' 'unsafe-inline'; " +
+          "img-src 'self' data: blob: https:; " +
+          "font-src 'self' data:; " +
+          "connect-src 'self' https://*.supabase.co https://ai.gateway.lovable.dev wss://*.supabase.co; " +
+          "frame-ancestors 'none'; " +
+          "base-uri 'self'; " +
+          "form-action 'self';",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

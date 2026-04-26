@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireUser } from "@/server/_auth";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type Body = {
@@ -46,23 +47,33 @@ function buildContextBlock(ctx: Body["context"]): string {
   return parts.length ? parts.join("\n\n") : "(no context yet — get to know them)";
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+// Same-origin only: no Access-Control-Allow-Origin header. The app calls this
+// endpoint from its own origin so CORS is unnecessary, and omitting the wildcard
+// prevents arbitrary third-party sites from invoking it to drain AI credits.
+const baseHeaders = {
   "Access-Control-Allow-Headers": "content-type, authorization",
 };
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: baseHeaders }),
       POST: async ({ request }) => {
+        // Require an authenticated Supabase session before proxying to the AI gateway.
+        try {
+          await requireUser(request);
+        } catch (resp) {
+          if (resp instanceof Response) return resp;
+          throw resp;
+        }
+
         let body: Body;
         try {
           body = await request.json();
         } catch {
           return new Response(JSON.stringify({ error: "Invalid JSON" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...baseHeaders, "Content-Type": "application/json" },
           });
         }
 
@@ -76,7 +87,7 @@ export const Route = createFileRoute("/api/chat")({
         if (messages.length === 0) {
           return new Response(JSON.stringify({ error: "No messages" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...baseHeaders, "Content-Type": "application/json" },
           });
         }
 
@@ -84,7 +95,7 @@ export const Route = createFileRoute("/api/chat")({
         if (!apiKey) {
           return new Response(JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }), {
             status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...baseHeaders, "Content-Type": "application/json" },
           });
         }
 
@@ -111,25 +122,25 @@ export const Route = createFileRoute("/api/chat")({
           if (res.status === 429) {
             return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a moment." }), {
               status: 429,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              headers: { ...baseHeaders, "Content-Type": "application/json" },
             });
           }
           if (res.status === 402) {
             return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), {
               status: 402,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              headers: { ...baseHeaders, "Content-Type": "application/json" },
             });
           }
           const text = await res.text().catch(() => "");
           console.error("AI gateway error:", res.status, text);
           return new Response(JSON.stringify({ error: "AI gateway error" }), {
             status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...baseHeaders, "Content-Type": "application/json" },
           });
         }
 
         return new Response(res.body, {
-          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          headers: { ...baseHeaders, "Content-Type": "text/event-stream" },
         });
       },
     },

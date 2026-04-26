@@ -9,6 +9,7 @@ import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useConversations, useMessages, useInsights, type ChatMessage } from "@/lib/chat-hooks";
 import { streamChat } from "@/lib/stream-chat";
 import { extractInsights } from "@/server/chat-insights.functions";
+import { callAuthed } from "@/lib/call-authed";
 
 type Props = {
   variant?: "page" | "drawer";
@@ -119,7 +120,7 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       // Background: extract durable insights every few turns
       const turnCount = messages.length + 2; // we added 2
       if (turnCount >= 4 && turnCount % 4 === 0) {
-        extractInsights({
+        callAuthed(extractInsights, {
           data: {
             messages: [
               ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
@@ -10,6 +10,7 @@ import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useInsights } from "@/lib/chat-hooks";
 import { generateLensPrompt } from "@/server/lens-agent.functions";
 import { extractInsightsFromReflection } from "@/server/reflection-insights.functions";
+import { callAuthed } from "@/lib/call-authed";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 
 export const Route = createFileRoute("/")({
@@ -68,7 +69,7 @@ function NewTabHome() {
           // ColorHunt-style randomness: pre-pick a random lens client-side
           const picked = enabledLenses[Math.floor(Math.random() * enabledLenses.length)];
           try {
-            const out = await generateLensPrompt({
+            const out = await callAuthed(generateLensPrompt, {
               data: {
                 goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description ?? undefined })),
                 lenses: enabledLenses.map((l) => ({ id: l.id, name: l.name, theme: l.theme, prompts: l.prompts })),
@@ -123,7 +124,7 @@ function NewTabHome() {
       await updateAnswer(reflectionId, answer.trim());
       toast.success("Reflection saved");
       // Background: mine the reflection for personalized, actionable insights.
-      extractInsightsFromReflection({
+      callAuthed(extractInsightsFromReflection, {
         data: {
           reflection: {
             question: prompt?.question ?? "",
@@ -249,6 +250,13 @@ function NewTabHome() {
           <p className={`mt-6 text-center text-xs ${mutedClass}`}>
             A new lens, question, and palette every tab.
           </p>
+          <div className={`mt-3 flex items-center justify-center gap-4 text-[11px] ${mutedClass}`}>
+            <Link to="/privacy" className="underline-offset-4 hover:underline">Privacy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/credits" className="underline-offset-4 hover:underline">
+              Credits & lens attribution
+            </Link>
+          </div>
         </div>
       </main>
     </div>

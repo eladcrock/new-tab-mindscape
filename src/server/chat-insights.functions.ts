@@ -1,5 +1,7 @@
 // Insight-extraction server function (non-streaming, called after a chat).
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireUser } from "./_auth";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type Input = {
@@ -19,6 +21,7 @@ export const extractInsights = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<{ insights: { category: string; content: string }[] }> => {
+    await requireUser(getRequest());
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 

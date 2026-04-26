@@ -1,5 +1,7 @@
 // Extract insights from saved reflections (the user's most considered input).
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireUser } from "./_auth";
 
 type ReflectionInput = { question: string; answer: string; lens_name?: string | null };
 type Existing = { category: string; content: string };
@@ -19,6 +21,7 @@ export const extractInsightsFromReflection = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<{ insights: { category: string; content: string }[] }> => {
+    await requireUser(getRequest());
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
