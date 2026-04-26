@@ -60,6 +60,7 @@ function NewTabHome() {
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
   const { insights, addMany: addInsights } = useInsights();
+  const { likes, like: toggleLike, isLiked } = useLensLikes();
 
   const [prompt, setPrompt] = useState<LensPrompt | null>(null);
   const [reflectionId, setReflectionId] = useState<string | null>(null);
@@ -88,8 +89,11 @@ function NewTabHome() {
             question: "Add a lens or set a goal to begin reflecting.",
           };
         } else {
-          // ColorHunt-style randomness: pre-pick a random lens client-side
-          const picked = enabledLenses[Math.floor(Math.random() * enabledLenses.length)];
+          // Bias the pre-pick toward liked lenses ~60% of the time
+          const likedPool = enabledLenses.filter((l) => isLiked(l.id));
+          const useLiked = likedPool.length > 0 && Math.random() < 0.6;
+          const pool = useLiked ? likedPool : enabledLenses;
+          const picked = pool[Math.floor(Math.random() * pool.length)];
           try {
             const out = await callAuthed(generateLensPrompt, {
               data: {
@@ -101,6 +105,7 @@ function NewTabHome() {
                   lens_name: r.lens_name,
                 })),
                 preferredLensId: picked.id,
+                likedLenses: likes.map((l) => ({ lensId: l.lens_id, lensName: l.lens_name ?? undefined, count: l.count })),
               },
             });
             result = { lensId: out.lensId, lensName: out.lensName, question: out.question };
