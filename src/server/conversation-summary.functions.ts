@@ -15,7 +15,7 @@ export const summarizeConversation = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ summary: string | null }> => {
     const req = getRequest();
-    const userId = await requireUser(req);
+    const { userId } = await requireUser(req);
 
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
