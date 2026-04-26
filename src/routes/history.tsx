@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageShell } from "@/components/PageShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,11 @@ export const Route = createFileRoute("/history")({
       { name: "description", content: "Search and revisit your past reflections." },
     ],
   }),
-  component: HistoryPage,
+  component: () => (
+    <RequireAuth>
+      <HistoryPage />
+    </RequireAuth>
+  ),
 });
 
 function HistoryPage() {
