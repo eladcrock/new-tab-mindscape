@@ -1,5 +1,7 @@
 // Extract insights from saved reflections (the user's most considered input).
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireUser } from "./_auth";
 
 type ReflectionInput = { question: string; answer: string; lens_name?: string | null };
 type Existing = { category: string; content: string };
