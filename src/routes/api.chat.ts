@@ -59,6 +59,14 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: baseHeaders }),
       POST: async ({ request }) => {
+        // Require an authenticated Supabase session before proxying to the AI gateway.
+        try {
+          await requireUser(request);
+        } catch (resp) {
+          if (resp instanceof Response) return resp;
+          throw resp;
+        }
+
         let body: Body;
         try {
           body = await request.json();
