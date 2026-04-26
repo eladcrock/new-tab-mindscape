@@ -110,6 +110,10 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       const recent = reflections.slice(0, 8).map((r) => ({ question: r.question, answer: r.answer, lens_name: r.lens_name }));
       const goalCtx = goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description ?? undefined }));
       const insightCtx = insights.slice(0, 30).map((i) => ({ category: i.category, content: i.content }));
+      const pastConvos = conversations
+        .filter((c) => c.id !== activeId && (c.summary || c.title))
+        .slice(0, 6)
+        .map((c) => ({ title: c.title, summary: c.summary ?? null, updated_at: c.updated_at }));
 
       // Build the message history we send (current persisted messages + new user turn)
       const history = [
@@ -118,7 +122,17 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       ];
 
       await streamChat(
-        { messages: history, context: { goals: goalCtx, lenses: enabledLenses, recentReflections: recent, insights: insightCtx } },
+        {
+          messages: history,
+          context: {
+            displayName: displayName ?? null,
+            goals: goalCtx,
+            lenses: enabledLenses,
+            recentReflections: recent,
+            insights: insightCtx,
+            pastConversations: pastConvos,
+          },
+        },
         {
           onDelta: (chunk) => {
             acc += chunk;
