@@ -69,22 +69,22 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
 
-  // Greet on empty conversation
+  // Greet on empty conversation (once per conversation)
   useEffect(() => {
     if (!activeId || streaming) return;
     if (messages.length > 0) return;
-    // Seed a starter assistant turn
-    const greet = async () => {
-      const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
-      const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
-      const activeGoals = goals.filter((g) => g.active);
-      const greeting =
-        activeGoals.length === 0
-          ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
-          : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
-      await append({ role: "assistant", content: greeting });
-    };
-    greet();
+    if (greetedRef.current.has(activeId)) return;
+    greetedRef.current.add(activeId);
+    const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
+    const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
+    const activeGoals = goals.filter((g) => g.active);
+    const greeting =
+      activeGoals.length === 0
+        ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
+        : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
+    append({ role: "assistant", content: greeting }).catch(() => {
+      greetedRef.current.delete(activeId);
+    });
   }, [activeId, messages.length, streaming, goals, append, displayName]);
 
   const send = async () => {
