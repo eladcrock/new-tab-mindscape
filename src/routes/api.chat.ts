@@ -5,10 +5,12 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 type Body = {
   messages: ChatMsg[];
   context?: {
+    displayName?: string | null;
     goals?: { title: string; description?: string }[];
     lenses?: { name: string; theme?: string }[];
     recentReflections?: { question: string; answer?: string | null; lens_name?: string | null }[];
     insights?: { category: string; content: string }[];
+    pastConversations?: { title?: string | null; summary?: string | null; updated_at?: string }[];
   };
 };
 
@@ -17,8 +19,10 @@ Your job is to help them think more clearly about their creative work by asking 
 
 How you behave:
 - The USER is the source of truth. You ask; they answer. Build context turn by turn.
+- Address them by name (provided in context) when it feels natural — not every message.
 - Ask ONE focused question at a time, then wait. Avoid stacking 3 questions in one message.
-- Ground every question in what you already know about them: their goals, recent reflections, prior insights.
+- Ground every question in what you already know about them: their goals, recent reflections, prior insights, past conversations.
+- When relevant, reference past conversations naturally ("Last time you were wrestling with X — where did that land?"). Don't force it.
 - When they share something rich, briefly mirror it back in your own words, then go deeper.
 - Pull from the lens framework (Jesse Schell's Deck of Lenses, expanded for any creative work) when relevant — name the lens by name.
 - Keep replies short (2–5 sentences). Markdown is fine. No emojis unless they use them first.
@@ -28,11 +32,22 @@ How you behave:
 function buildContextBlock(ctx: Body["context"]): string {
   if (!ctx) return "(no context yet — get to know them)";
   const parts: string[] = [];
+  if (ctx.displayName) {
+    parts.push(`# Their name\n${ctx.displayName}`);
+  }
   if (ctx.goals?.length) {
     parts.push(`# Their active goals\n${ctx.goals.map((g) => `- ${g.title}${g.description ? `: ${g.description}` : ""}`).join("\n")}`);
   }
   if (ctx.insights?.length) {
     parts.push(`# What you've learned about them so far\n${ctx.insights.map((i) => `- (${i.category}) ${i.content}`).join("\n")}`);
+  }
+  if (ctx.pastConversations?.length) {
+    parts.push(
+      `# Recent past conversations (most recent first — reference naturally if relevant)\n${ctx.pastConversations
+        .slice(0, 6)
+        .map((c, i) => `${i + 1}. ${c.title ? `"${c.title}" — ` : ""}${c.summary ?? "(no summary yet)"}`)
+        .join("\n")}`,
+    );
   }
   if (ctx.recentReflections?.length) {
     parts.push(
