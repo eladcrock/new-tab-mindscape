@@ -7,8 +7,10 @@ import { toast } from "sonner";
 
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useConversations, useMessages, useInsights, type ChatMessage } from "@/lib/chat-hooks";
+import { useProfile } from "@/lib/profile-hooks";
 import { streamChat } from "@/lib/stream-chat";
 import { extractInsights } from "@/server/chat-insights.functions";
+import { summarizeConversation } from "@/server/conversation-summary.functions";
 import { callAuthed } from "@/lib/call-authed";
 
 type Props = {
@@ -22,7 +24,8 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const { lenses } = useLenses();
   const { reflections } = useReflections();
   const { insights, addMany: addInsights } = useInsights();
-  const { conversations, create, remove } = useConversations();
+  const { conversations, create, remove, refresh: refreshConversations } = useConversations();
+  const { displayName } = useProfile();
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, append, setLocal, refresh } = useMessages(activeId);
@@ -30,6 +33,7 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const previousActiveId = useRef<string | null>(null);
 
   // Auto-pick or create a conversation
   useEffect(() => {
@@ -40,6 +44,19 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       create("New conversation").then(setActiveId);
     }
   }, [conversations, activeId, create]);
+
+  // Summarize the previous conversation when the user switches away
+  useEffect(() => {
+    const prior = previousActiveId.current;
+    previousActiveId.current = activeId;
+    if (!prior || prior === activeId) return;
+    // Fire and forget — the server function only summarizes if there are >= 2 turns
+    callAuthed(summarizeConversation, { data: { conversationId: prior } })
+      .then((r) => {
+        if (r.summary) refreshConversations();
+      })
+      .catch((e) => console.warn("conversation summary failed", e));
+  }, [activeId, refreshConversations]);
 
   // Auto-scroll
   useEffect(() => {
@@ -52,14 +69,17 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     if (messages.length > 0) return;
     // Seed a starter assistant turn
     const greet = async () => {
+      const firstName = displayName ? displayName.split(/[\s.]+/)[0] : null;
+      const hi = firstName ? `Hey ${firstName} — ` : "Hey — ";
+      const activeGoals = goals.filter((g) => g.active);
       const greeting =
-        goals.filter((g) => g.active).length === 0
-          ? "Hey — I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?"
-          : `Welcome back. Of your active goals${goals.filter((g) => g.active).length > 1 ? "" : ""}, which one feels most alive today — and what part of it has your attention?`;
+        activeGoals.length === 0
+          ? `${hi}I'm your creativity agent. To get useful, I need to know you a little. What are you working on right now, and why does it matter to you?`
+          : `${hi}welcome back. Of your active goals, which one feels most alive today — and what part of it has your attention?`;
       await append({ role: "assistant", content: greeting });
     };
     greet();
-  }, [activeId, messages.length, streaming, goals, append]);
+  }, [activeId, messages.length, streaming, goals, append, displayName]);
 
   const send = async () => {
     if (!input.trim() || !activeId || streaming) return;
@@ -90,6 +110,10 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       const recent = reflections.slice(0, 8).map((r) => ({ question: r.question, answer: r.answer, lens_name: r.lens_name }));
       const goalCtx = goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description ?? undefined }));
       const insightCtx = insights.slice(0, 30).map((i) => ({ category: i.category, content: i.content }));
+      const pastConvos = conversations
+        .filter((c) => c.id !== activeId && (c.summary || c.title))
+        .slice(0, 6)
+        .map((c) => ({ title: c.title, summary: c.summary ?? null, updated_at: c.updated_at }));
 
       // Build the message history we send (current persisted messages + new user turn)
       const history = [
@@ -98,7 +122,17 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       ];
 
       await streamChat(
-        { messages: history, context: { goals: goalCtx, lenses: enabledLenses, recentReflections: recent, insights: insightCtx } },
+        {
+          messages: history,
+          context: {
+            displayName: displayName ?? null,
+            goals: goalCtx,
+            lenses: enabledLenses,
+            recentReflections: recent,
+            insights: insightCtx,
+            pastConversations: pastConvos,
+          },
+        },
         {
           onDelta: (chunk) => {
             acc += chunk;

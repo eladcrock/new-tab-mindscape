@@ -10,7 +10,7 @@ export type ChatMessage = {
   content: string;
   created_at: string;
 };
-export type Conversation = { id: string; title: string | null; created_at: string; updated_at: string };
+export type Conversation = { id: string; title: string | null; created_at: string; updated_at: string; summary?: string | null; summary_updated_at?: string | null };
 export type Insight = { id: string; category: string; content: string; created_at: string };
 
 const K = {
