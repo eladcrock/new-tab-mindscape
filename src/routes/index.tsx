@@ -5,6 +5,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Loader2, Sparkles, Heart } from "lucide-react";
+import { useLensLikes } from "@/lib/lens-likes";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useInsights } from "@/lib/chat-hooks";
@@ -59,6 +60,7 @@ function NewTabHome() {
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
   const { insights, addMany: addInsights } = useInsights();
+  const { likes, like: toggleLike, isLiked } = useLensLikes();
 
   const [prompt, setPrompt] = useState<LensPrompt | null>(null);
   const [reflectionId, setReflectionId] = useState<string | null>(null);
@@ -87,8 +89,11 @@ function NewTabHome() {
             question: "Add a lens or set a goal to begin reflecting.",
           };
         } else {
-          // ColorHunt-style randomness: pre-pick a random lens client-side
-          const picked = enabledLenses[Math.floor(Math.random() * enabledLenses.length)];
+          // Bias the pre-pick toward liked lenses ~60% of the time
+          const likedPool = enabledLenses.filter((l) => isLiked(l.id));
+          const useLiked = likedPool.length > 0 && Math.random() < 0.6;
+          const pool = useLiked ? likedPool : enabledLenses;
+          const picked = pool[Math.floor(Math.random() * pool.length)];
           try {
             const out = await callAuthed(generateLensPrompt, {
               data: {
@@ -100,6 +105,7 @@ function NewTabHome() {
                   lens_name: r.lens_name,
                 })),
                 preferredLensId: picked.id,
+                likedLenses: likes.map((l) => ({ lensId: l.lens_id, lensName: l.lens_name ?? undefined, count: l.count })),
               },
             });
             result = { lensId: out.lensId, lensName: out.lensName, question: out.question };
@@ -127,7 +133,7 @@ function NewTabHome() {
         setLoading(false);
       }
     },
-    [loading, enabledLenses, goals, reflections, addReflection],
+    [loading, enabledLenses, goals, reflections, addReflection, likes, isLiked],
   );
 
   // Auto-load first prompt once data is ready
@@ -191,8 +197,25 @@ function NewTabHome() {
               isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
             }`}
           >
-            <div className={`text-xs uppercase tracking-[0.2em] mb-4 ${mutedClass}`}>
-              {prompt?.lensName ?? "…"}
+            <div className={`text-xs uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${mutedClass}`}>
+              <span>{prompt?.lensName ?? "…"}</span>
+              {prompt?.lensId && (
+                <button
+                  onClick={async () => {
+                    const liked = await toggleLike(prompt.lensId!, prompt.lensName);
+                    toast.success(liked ? "Liked — we'll show this lens more" : "Removed from liked lenses");
+                  }}
+                  className={`inline-flex items-center justify-center rounded-full p-1 transition ${
+                    isLight ? "hover:bg-white/15" : "hover:bg-neutral-900/10"
+                  }`}
+                  aria-label={isLiked(prompt.lensId) ? "Unlike this lens" : "Like this lens"}
+                  title={isLiked(prompt.lensId) ? "Liked — click to remove" : "Like this lens"}
+                >
+                  <Heart
+                    className={`h-3.5 w-3.5 ${isLiked(prompt.lensId) ? "fill-current" : ""}`}
+                  />
+                </button>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight">
               {loading && !prompt ? (
