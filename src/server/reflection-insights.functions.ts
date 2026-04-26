@@ -21,6 +21,7 @@ export const extractInsightsFromReflection = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<{ insights: { category: string; content: string }[] }> => {
+    await requireUser(getRequest());
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
