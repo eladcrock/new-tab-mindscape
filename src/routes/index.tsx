@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TopBar } from "@/components/TopBar";
+import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -16,7 +17,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Open a new tab and get a fresh, randomized question through a creative lens." },
     ],
   }),
-  component: NewTabHome,
+  component: () => (
+    <RequireAuth>
+      <NewTabHome />
+    </RequireAuth>
+  ),
 });
 
 type LensPrompt = {

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageShell } from "@/components/PageShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +18,11 @@ export const Route = createFileRoute("/lenses")({
       { name: "description", content: "Browse the starter lens deck and add your own thinking lenses." },
     ],
   }),
-  component: LensesPage,
+  component: () => (
+    <RequireAuth>
+      <LensesPage />
+    </RequireAuth>
+  ),
 });
 
 function LensesPage() {

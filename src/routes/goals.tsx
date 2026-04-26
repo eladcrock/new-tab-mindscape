@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageShell } from "@/components/PageShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +17,11 @@ export const Route = createFileRoute("/goals")({
       { name: "description", content: "Tell the agent what you're working toward so it asks better questions." },
     ],
   }),
-  component: GoalsPage,
+  component: () => (
+    <RequireAuth>
+      <GoalsPage />
+    </RequireAuth>
+  ),
 });
 
 function GoalsPage() {

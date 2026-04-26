@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { Eye, Target, History as HistoryIcon, LogIn, LogOut, MessageCircle } from "lucide-react";
+import { Eye, Target, History as HistoryIcon, LogOut, MessageCircle } from "lucide-react";
 
 type Props = {
   textColor?: string;
@@ -37,7 +37,7 @@ export function TopBar({ textColor, transparent }: Props) {
         <Link to="/history" className={linkBase} style={style}>
           <HistoryIcon className="h-4 w-4" /> <span className="hidden sm:inline">History</span>
         </Link>
-        {user ? (
+        {user && (
           <Button
             variant="ghost"
             size="sm"
@@ -48,10 +48,6 @@ export function TopBar({ textColor, transparent }: Props) {
             <LogOut className="h-4 w-4" />
             <span className="hidden sm:inline ml-1.5">Sign out</span>
           </Button>
-        ) : (
-          <Link to="/auth" className={linkBase} style={style}>
-            <LogIn className="h-4 w-4" /> <span className="hidden sm:inline">Sign in</span>
-          </Link>
         )}
       </nav>
     </header>

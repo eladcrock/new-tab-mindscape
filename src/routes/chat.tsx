@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TopBar } from "@/components/TopBar";
+import { RequireAuth } from "@/components/RequireAuth";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useInsights } from "@/lib/chat-hooks";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,11 @@ export const Route = createFileRoute("/chat")({
       { name: "description", content: "Have an ongoing conversation with your personal creativity agent. It learns about you over time." },
     ],
   }),
-  component: ChatPage,
+  component: () => (
+    <RequireAuth>
+      <ChatPage />
+    </RequireAuth>
+  ),
 });
 
 function ChatPage() {
