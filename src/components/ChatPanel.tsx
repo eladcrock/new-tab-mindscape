@@ -7,8 +7,10 @@ import { toast } from "sonner";
 
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useConversations, useMessages, useInsights, type ChatMessage } from "@/lib/chat-hooks";
+import { useProfile } from "@/lib/profile-hooks";
 import { streamChat } from "@/lib/stream-chat";
 import { extractInsights } from "@/server/chat-insights.functions";
+import { summarizeConversation } from "@/server/conversation-summary.functions";
 import { callAuthed } from "@/lib/call-authed";
 
 type Props = {
