@@ -4,10 +4,12 @@ import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
+import { useInsights } from "@/lib/chat-hooks";
 import { generateLensPrompt } from "@/server/lens-agent.functions";
+import { extractInsightsFromReflection } from "@/server/reflection-insights.functions";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 
 export const Route = createFileRoute("/")({
