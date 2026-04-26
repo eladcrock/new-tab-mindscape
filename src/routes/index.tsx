@@ -4,7 +4,7 @@ import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useInsights } from "@/lib/chat-hooks";
@@ -12,6 +12,8 @@ import { generateLensPrompt } from "@/server/lens-agent.functions";
 import { extractInsightsFromReflection } from "@/server/reflection-insights.functions";
 import { callAuthed } from "@/lib/call-authed";
 import { randomGradient, type Gradient } from "@/lib/gradients";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,7 +35,26 @@ type LensPrompt = {
   question: string;
 };
 
+async function saveCurrentGradient(gradient: Gradient, userId: string | null | undefined) {
+  if (!userId) {
+    toast.error("Sign in to save");
+    return;
+  }
+  const matches = gradient.css.match(/#[0-9a-fA-F]{6}/g);
+  if (!matches || matches.length < 2) {
+    toast.error("Could not parse gradient");
+    return;
+  }
+  const colors = matches.slice(0, 2);
+  const { error } = await supabase
+    .from("saved_palettes")
+    .insert({ user_id: userId, name: null, colors });
+  if (error) toast.error("Could not save");
+  else toast.success("Gradient saved to palettes");
+}
+
 function NewTabHome() {
+  const { user } = useAuth();
   const { goals } = useGoals();
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
@@ -251,6 +272,16 @@ function NewTabHome() {
             A new lens, question, and palette every tab.
           </p>
           <div className={`mt-3 flex items-center justify-center gap-4 text-[11px] ${mutedClass}`}>
+            <button
+              onClick={() => saveCurrentGradient(gradient, user?.id)}
+              className="underline-offset-4 hover:underline inline-flex items-center gap-1"
+              title="Save this gradient to your palettes"
+            >
+              <Heart className="h-3 w-3" /> Save gradient
+            </button>
+            <span aria-hidden>·</span>
+            <Link to="/palettes" className="underline-offset-4 hover:underline">Palettes</Link>
+            <span aria-hidden>·</span>
             <Link to="/privacy" className="underline-offset-4 hover:underline">Privacy</Link>
             <span aria-hidden>·</span>
             <Link to="/credits" className="underline-offset-4 hover:underline">
