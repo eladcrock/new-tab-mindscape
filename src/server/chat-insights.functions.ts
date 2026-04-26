@@ -35,15 +35,27 @@ export const extractInsights = createServerFn({ method: "POST" })
         messages: [
           {
             role: "system",
-            content: `You read a conversation between a user and their creativity agent and extract DURABLE insights about the user that will help future conversations be more personal.
+            content: `You read input from a user (chat turns and/or written reflections) and extract DURABLE, PERSONALIZED insights that will make future agent responses more useful and actionable.
 
-Categories you may use: working_style, interests, project, value, struggle, preference, identity, goal_signal, recurring_theme.
+Categories:
+- working_style — how they work (e.g. "They think best by writing first thing in the morning.")
+- interests — recurring topics that energize them
+- project — what they're actively building or pursuing
+- value — what they care about
+- struggle — a friction point or blocker they keep returning to
+- preference — how they want to be supported
+- identity — how they describe themselves
+- goal_signal — a desired outcome or direction
+- recurring_theme — pattern across multiple inputs
+- next_action — a CONCRETE, personalized suggestion the agent can offer next time, grounded in what the user actually said (e.g. "Suggest a 20-min sketching block before standup since mornings energize them.")
 
 Rules:
-- Only output things stated or strongly implied by the USER, not the agent.
-- Skip anything already covered in existing insights.
-- Each insight is one sentence, under 25 words, written in third person ("They prefer...", "They are working on...").
-- Return 0–6 insights. If nothing new, return an empty array.`,
+- Only extract from what the USER said/wrote, not the agent.
+- Skip anything already covered in existing insights — no duplicates, no rephrasings.
+- Be specific. "They like creativity" is too vague. "They feel most creative on long walks without their phone" is good.
+- Each insight: one sentence, under 30 words, third person ("They...").
+- next_action insights must be doable this week and tied to something concrete the user mentioned.
+- Return 0–6 new insights. If nothing genuinely new, return [].`,
           },
           { role: "user", content: `# Existing insights\n${existing}\n\n# Conversation\n${transcript}` },
         ],
