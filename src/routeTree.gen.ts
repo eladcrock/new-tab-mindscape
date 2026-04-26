@@ -9,14 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LensesRouteImport } from './routes/lenses'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as CreditsRouteImport } from './routes/credits'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LensesRoute = LensesRouteImport.update({
   id: '/lenses',
   path: '/lenses',
@@ -30,6 +37,11 @@ const HistoryRoute = HistoryRouteImport.update({
 const GoalsRoute = GoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditsRoute = CreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -57,18 +69,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/credits': typeof CreditsRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
+  '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/credits': typeof CreditsRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
+  '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -76,9 +92,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/credits': typeof CreditsRoute
   '/goals': typeof GoalsRoute
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
+  '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
@@ -87,20 +105,33 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/chat'
+    | '/credits'
     | '/goals'
     | '/history'
     | '/lenses'
+    | '/privacy'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/chat' | '/goals' | '/history' | '/lenses' | '/api/chat'
+  to:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/credits'
+    | '/goals'
+    | '/history'
+    | '/lenses'
+    | '/privacy'
+    | '/api/chat'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/chat'
+    | '/credits'
     | '/goals'
     | '/history'
     | '/lenses'
+    | '/privacy'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
@@ -108,14 +139,23 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRoute
+  CreditsRoute: typeof CreditsRoute
   GoalsRoute: typeof GoalsRoute
   HistoryRoute: typeof HistoryRoute
   LensesRoute: typeof LensesRoute
+  PrivacyRoute: typeof PrivacyRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lenses': {
       id: '/lenses'
       path: '/lenses'
@@ -135,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credits': {
+      id: '/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof CreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -172,9 +219,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRoute,
+  CreditsRoute: CreditsRoute,
   GoalsRoute: GoalsRoute,
   HistoryRoute: HistoryRoute,
   LensesRoute: LensesRoute,
+  PrivacyRoute: PrivacyRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
