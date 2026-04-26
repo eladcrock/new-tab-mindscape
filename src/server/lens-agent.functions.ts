@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireUser } from "./_auth";
 
 type LensRef = { id: string; name: string; theme?: string; prompts?: string[] };
 type GoalRef = { title: string; description?: string };
@@ -28,6 +30,7 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<Output> => {
+    await requireUser(getRequest());
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
