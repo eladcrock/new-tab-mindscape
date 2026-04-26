@@ -33,7 +33,7 @@ export const Route = createRootRoute({
       { title: "Focal Lens — a thoughtful new tab" },
       { name: "description", content: "A new-tab companion that asks meaningful questions inspired by Jesse Schell's Deck of Lenses, paired with a fresh color palette every time." },
       { property: "og:title", content: "Focal Lens — a thoughtful new tab" },
-      { property: "og:description", content: "Reflective questions and Color Hunt-style palettes every time you open a new tab." },
+      { property: "og:description", content: "A new-tab companion that asks meaningful questions inspired by Jesse Schell's Deck of Lenses, paired with a fresh color palette every time." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       // Installable web app
@@ -59,6 +59,10 @@ export const Route = createRootRoute({
           "base-uri 'self'; " +
           "form-action 'self';",
       },
+      { name: "twitter:title", content: "Focal Lens — a thoughtful new tab" },
+      { name: "twitter:description", content: "A new-tab companion that asks meaningful questions inspired by Jesse Schell's Deck of Lenses, paired with a fresh color palette every time." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ac3b8b3-fa93-4caa-b389-9edbded92c1a/id-preview-8aebef71--f0e76f01-2bf2-43d0-a08b-455020dc5658.lovable.app-1777223278189.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ac3b8b3-fa93-4caa-b389-9edbded92c1a/id-preview-8aebef71--f0e76f01-2bf2-43d0-a08b-455020dc5658.lovable.app-1777223278189.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
