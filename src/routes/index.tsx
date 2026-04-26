@@ -5,6 +5,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Loader2, Sparkles, Heart } from "lucide-react";
+import { useLensLikes } from "@/lib/lens-likes";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { useInsights } from "@/lib/chat-hooks";
