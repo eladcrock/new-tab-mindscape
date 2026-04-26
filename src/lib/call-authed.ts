@@ -3,18 +3,16 @@
 // `requireUser()` check can verify the caller's session.
 import { supabase } from "@/integrations/supabase/client";
 
-type ServerFn<TArgs, TResult> = (args: TArgs) => Promise<TResult>;
-
-export async function callAuthed<TArgs extends { data?: unknown; headers?: Record<string, string> }, TResult>(
-  fn: ServerFn<TArgs, TResult>,
-  args: TArgs,
-): Promise<TResult> {
+export async function callAuthed<TFn extends (args: any) => Promise<any>>(
+  fn: TFn,
+  args: Parameters<TFn>[0],
+): Promise<Awaited<ReturnType<TFn>>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error("You must be signed in.");
-  const merged = {
-    ...args,
-    headers: { ...(args.headers ?? {}), Authorization: `Bearer ${token}` },
-  } as TArgs;
+  const merged: any = {
+    ...(args as object),
+    headers: { ...((args as any)?.headers ?? {}), Authorization: `Bearer ${token}` },
+  };
   return fn(merged);
 }
