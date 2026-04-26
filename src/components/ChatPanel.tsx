@@ -92,22 +92,22 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
     const text = input.trim();
     setInput("");
 
-    // Persist user msg
-    await append({ role: "user", content: text });
-
-    // Build streaming placeholder
+    // Snapshot messages BEFORE any mutations so optimistic updates are stable
+    const baseMessages = messages;
+    const optimisticUser: ChatMessage = {
+      id: "optimistic-user-" + Date.now(),
+      role: "user",
+      content: text,
+      created_at: new Date().toISOString(),
+    };
     const placeholder: ChatMessage = {
       id: "streaming-" + Date.now(),
       role: "assistant",
       content: "",
       created_at: new Date().toISOString(),
     };
-    // local-only update for live tokens
-    setLocal([
-      ...messages,
-      { id: "u-" + Date.now(), role: "user", content: text, created_at: new Date().toISOString() },
-      placeholder,
-    ]);
+    // Show user message + empty assistant immediately
+    setLocal([...baseMessages, optimisticUser, placeholder]);
 
     let acc = "";
     setStreaming(true);
@@ -121,9 +121,8 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
         .slice(0, 6)
         .map((c) => ({ title: c.title, summary: c.summary ?? null, updated_at: c.updated_at }));
 
-      // Build the message history we send (current persisted messages + new user turn)
       const history = [
-        ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        ...baseMessages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
         { role: "user" as const, content: text },
       ];
 
@@ -142,15 +141,13 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
         {
           onDelta: (chunk) => {
             acc += chunk;
-            setLocal([
-              ...messages,
-              { id: "u-live", role: "user", content: text, created_at: new Date().toISOString() },
-              { ...placeholder, content: acc },
-            ]);
+            setLocal([...baseMessages, optimisticUser, { ...placeholder, content: acc }]);
           },
         },
       );
 
+      // Persist both turns AFTER streaming completes, then refresh from DB
+      await append({ role: "user", content: text });
       if (acc.trim()) {
         await append({ role: "assistant", content: acc.trim() });
       } else {
@@ -158,12 +155,12 @@ export function ChatPanel({ variant = "page", textColor, className = "" }: Props
       }
 
       // Background: extract durable insights every few turns
-      const turnCount = messages.length + 2; // we added 2
+      const turnCount = baseMessages.length + 2;
       if (turnCount >= 4 && turnCount % 4 === 0) {
         callAuthed(extractInsights, {
           data: {
             messages: [
-              ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+              ...baseMessages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
               { role: "user", content: text },
               { role: "assistant", content: acc.trim() },
             ],
