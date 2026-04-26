@@ -34,6 +34,17 @@ function isGradient(colors: string[]) {
   return colors.length === 2;
 }
 
+function isLightColor(hex: string): boolean {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  if (full.length !== 6) return true;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  // Perceived luminance
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+}
+
 function paletteCss(colors: string[]) {
   if (isGradient(colors)) {
     return `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
