@@ -26,16 +26,16 @@ export function TopBar({ textColor, transparent }: Props) {
       </Link>
       <nav className="flex items-center gap-1">
         <Link to="/goals" className={linkBase} style={style}>
-          <Target className="h-4 w-4" /> <span className="hidden sm:inline">Goals</span>
+          <Target className="h-4 w-4" /> <span>Goals</span>
         </Link>
         <Link to="/lenses" className={linkBase} style={style}>
-          <Eye className="h-4 w-4" /> <span className="hidden sm:inline">Lenses</span>
+          <Eye className="h-4 w-4" /> <span>Lenses</span>
         </Link>
         <Link to="/chat" className={linkBase} style={style}>
-          <MessageCircle className="h-4 w-4" /> <span className="hidden sm:inline">Chat</span>
+          <MessageCircle className="h-4 w-4" /> <span>Chat</span>
         </Link>
         <Link to="/history" className={linkBase} style={style}>
-          <HistoryIcon className="h-4 w-4" /> <span className="hidden sm:inline">History</span>
+          <HistoryIcon className="h-4 w-4" /> <span>History</span>
         </Link>
         {user && (
           <Button
