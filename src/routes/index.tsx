@@ -4,10 +4,12 @@ import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
+import { useInsights } from "@/lib/chat-hooks";
 import { generateLensPrompt } from "@/server/lens-agent.functions";
+import { extractInsightsFromReflection } from "@/server/reflection-insights.functions";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 
 export const Route = createFileRoute("/")({
@@ -34,6 +36,7 @@ function NewTabHome() {
   const { goals } = useGoals();
   const { lenses } = useLenses();
   const { reflections, add: addReflection, updateAnswer } = useReflections();
+  const { insights, addMany: addInsights } = useInsights();
 
   const [prompt, setPrompt] = useState<LensPrompt | null>(null);
   const [reflectionId, setReflectionId] = useState<string | null>(null);
@@ -119,6 +122,30 @@ function NewTabHome() {
     try {
       await updateAnswer(reflectionId, answer.trim());
       toast.success("Reflection saved");
+      // Background: mine the reflection for personalized, actionable insights.
+      extractInsightsFromReflection({
+        data: {
+          reflection: {
+            question: prompt?.question ?? "",
+            answer: answer.trim(),
+            lens_name: prompt?.lensName ?? null,
+          },
+          existingInsights: insights.map((i) => ({ category: i.category, content: i.content })),
+          goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description })),
+        },
+      })
+        .then((r) => {
+          if (r.insights.length > 0) {
+            addInsights(r.insights);
+            const actionable = r.insights.filter((i) => i.category === "next_action").length;
+            toast.success(
+              actionable > 0
+                ? `Agent learned ${r.insights.length} new thing${r.insights.length === 1 ? "" : "s"} (${actionable} actionable)`
+                : `Agent learned ${r.insights.length} new thing${r.insights.length === 1 ? "" : "s"} about you`,
+            );
+          }
+        })
+        .catch((e) => console.warn("reflection insight extraction failed", e));
     } finally {
       setSaving(false);
     }
@@ -190,6 +217,34 @@ function NewTabHome() {
               </div>
             </div>
           </div>
+
+          {insights.length > 0 && (
+            <div
+              className={`mt-6 rounded-2xl p-5 backdrop-blur-md border ${
+                isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
+              }`}
+            >
+              <div className={`flex items-center gap-2 text-xs uppercase tracking-[0.18em] mb-3 ${mutedClass}`}>
+                <Sparkles className="h-3.5 w-3.5" /> What the agent has learned about you
+              </div>
+              <ul className="space-y-2">
+                {insights.slice(0, 5).map((i) => (
+                  <li key={i.id} className="text-sm flex gap-2">
+                    <span
+                      className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider ${
+                        i.category === "next_action"
+                          ? isLight ? "bg-white/25" : "bg-neutral-900/15"
+                          : isLight ? "bg-white/10" : "bg-neutral-900/5"
+                      }`}
+                    >
+                      {i.category.replace(/_/g, " ")}
+                    </span>
+                    <span>{i.content}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <p className={`mt-6 text-center text-xs ${mutedClass}`}>
             A new lens, question, and palette every tab.
