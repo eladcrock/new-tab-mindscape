@@ -4,7 +4,7 @@ import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Loader2, Sparkles, Heart, MessageSquare } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Heart, MessageSquare, Flame, Trophy } from "lucide-react";
 import { useLensLikes } from "@/lib/lens-likes";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
@@ -16,6 +16,7 @@ import { callAuthed } from "@/lib/call-authed";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { readStreak, recordReflection, type StreakState } from "@/lib/reflection-streak";
 
 export const Route = createFileRoute("/")({
   head: () => ({
