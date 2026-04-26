@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/auth-context";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · Lens Tab" },
+      { title: "Sign in · Focal Lens" },
       { name: "description", content: "Sign in to keep your goals, lenses, and reflections private to you." },
     ],
   }),
@@ -74,7 +74,7 @@ function AuthPage() {
         <div className="text-center mb-8 text-white">
           <div className="inline-flex items-center gap-2 mb-3">
             <Eye className="h-6 w-6" />
-            <span className="text-xl font-semibold tracking-tight">Lens Tab</span>
+            <span className="text-xl font-semibold tracking-tight">Focal Lens</span>
           </div>
           <h1 className="text-2xl font-semibold mb-2">Sign in to continue</h1>
           <p className="text-sm text-white/70">

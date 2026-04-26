@@ -30,9 +30,9 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lens Tab — a thoughtful new tab" },
+      { title: "Focal Lens — a thoughtful new tab" },
       { name: "description", content: "A new-tab companion that asks meaningful questions inspired by Jesse Schell's Deck of Lenses, paired with a fresh color palette every time." },
-      { property: "og:title", content: "Lens Tab — a thoughtful new tab" },
+      { property: "og:title", content: "Focal Lens — a thoughtful new tab" },
       { property: "og:description", content: "Reflective questions and Color Hunt-style palettes every time you open a new tab." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -41,7 +41,7 @@ export const Route = createRootRoute({
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Lens Tab" },
+      { name: "apple-mobile-web-app-title", content: "Focal Lens" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

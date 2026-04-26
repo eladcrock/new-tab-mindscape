@@ -13,7 +13,7 @@ import { useGoals } from "@/lib/data-hooks";
 export const Route = createFileRoute("/goals")({
   head: () => ({
     meta: [
-      { title: "Your goals · Lens Tab" },
+      { title: "Your goals · Focal Lens" },
       { name: "description", content: "Tell the agent what you're working toward so it asks better questions." },
     ],
   }),

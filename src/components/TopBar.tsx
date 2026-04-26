@@ -22,7 +22,7 @@ export function TopBar({ textColor, transparent }: Props) {
     >
       <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight" style={style}>
         <Eye className="h-5 w-5" />
-        <span>Lens Tab</span>
+        <span>Focal Lens</span>
       </Link>
       <nav className="flex items-center gap-1">
         <Link to="/goals" className={linkBase} style={style}>

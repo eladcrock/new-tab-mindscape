@@ -15,7 +15,7 @@ import { randomGradient, type Gradient } from "@/lib/gradients";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lens Tab — your thoughtful new tab" },
+      { title: "Focal Lens — your thoughtful new tab" },
       { name: "description", content: "Open a new tab and get a fresh, randomized question through a creative lens." },
     ],
   }),

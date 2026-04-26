@@ -9,7 +9,7 @@ import { Trash2, Brain } from "lucide-react";
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "Chat with your agent · Lens Tab" },
+      { title: "Chat with your agent · Focal Lens" },
       { name: "description", content: "Have an ongoing conversation with your personal creativity agent. It learns about you over time." },
     ],
   }),
