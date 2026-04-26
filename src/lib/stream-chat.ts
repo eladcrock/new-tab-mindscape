@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type Ctx = {
+  displayName?: string | null;
   goals?: { title: string; description?: string }[];
   lenses?: { name: string; theme?: string }[];
   recentReflections?: { question: string; answer?: string | null; lens_name?: string | null }[];
   insights?: { category: string; content: string }[];
+  pastConversations?: { title?: string | null; summary?: string | null; updated_at?: string }[];
 };
 
 export async function streamChat(
