@@ -152,16 +152,35 @@ function NewTabHome() {
   const handleSaveAnswer = async () => {
     if (!reflectionId || !answer.trim()) return;
     setSaving(true);
+    const savedAnswer = answer.trim();
+    const savedPrompt = prompt;
     try {
-      await updateAnswer(reflectionId, answer.trim());
-      toast.success("Reflection saved");
+      await updateAnswer(reflectionId, savedAnswer);
+
+      // Reward: streak + points + encouragement
+      const reward = recordReflection();
+      setStreak(reward.state);
+      const streakSuffix = reward.state.streak > 1 ? ` · ${reward.state.streak}-day streak` : "";
+      toast.success(
+        `+${reward.pointsEarned} pts — ${reward.encouragement}${streakSuffix}`,
+      );
+      if (reward.milestone) {
+        // Slight delay so milestone reads as a separate beat
+        setTimeout(() => toast(reward.milestone!, { duration: 5000 }), 400);
+      }
+
+      // Clear the form and pull a fresh lens
+      setAnswer("");
+      setReflectionId(null);
+      requestNew(true);
+
       // Background: mine the reflection for personalized, actionable insights.
       callAuthed(extractInsightsFromReflection, {
         data: {
           reflection: {
-            question: prompt?.question ?? "",
-            answer: answer.trim(),
-            lens_name: prompt?.lensName ?? null,
+            question: savedPrompt?.question ?? "",
+            answer: savedAnswer,
+            lens_name: savedPrompt?.lensName ?? null,
           },
           existingInsights: insights.map((i) => ({ category: i.category, content: i.content })),
           goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description })),
