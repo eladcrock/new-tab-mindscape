@@ -4,7 +4,7 @@ import { TopBar } from "@/components/TopBar";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Loader2, Sparkles, Heart, MessageSquare } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Heart, MessageSquare, Flame, Trophy } from "lucide-react";
 import { useLensLikes } from "@/lib/lens-likes";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
@@ -16,6 +16,7 @@ import { callAuthed } from "@/lib/call-authed";
 import { randomGradient, type Gradient } from "@/lib/gradients";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { readStreak, recordReflection, type StreakState } from "@/lib/reflection-streak";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,6 +72,7 @@ function NewTabHome() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [gradient, setGradient] = useState<Gradient>(() => randomGradient());
+  const [streak, setStreak] = useState<StreakState>(() => readStreak());
   const initialized = useRef(false);
 
   const enabledLenses = lenses.filter((l) => l.enabled);
@@ -150,16 +152,35 @@ function NewTabHome() {
   const handleSaveAnswer = async () => {
     if (!reflectionId || !answer.trim()) return;
     setSaving(true);
+    const savedAnswer = answer.trim();
+    const savedPrompt = prompt;
     try {
-      await updateAnswer(reflectionId, answer.trim());
-      toast.success("Reflection saved");
+      await updateAnswer(reflectionId, savedAnswer);
+
+      // Reward: streak + points + encouragement
+      const reward = recordReflection();
+      setStreak(reward.state);
+      const streakSuffix = reward.state.streak > 1 ? ` · ${reward.state.streak}-day streak` : "";
+      toast.success(
+        `+${reward.pointsEarned} pts — ${reward.encouragement}${streakSuffix}`,
+      );
+      if (reward.milestone) {
+        // Slight delay so milestone reads as a separate beat
+        setTimeout(() => toast(reward.milestone!, { duration: 5000 }), 400);
+      }
+
+      // Clear the form and pull a fresh lens
+      setAnswer("");
+      setReflectionId(null);
+      requestNew(true);
+
       // Background: mine the reflection for personalized, actionable insights.
       callAuthed(extractInsightsFromReflection, {
         data: {
           reflection: {
-            question: prompt?.question ?? "",
-            answer: answer.trim(),
-            lens_name: prompt?.lensName ?? null,
+            question: savedPrompt?.question ?? "",
+            answer: savedAnswer,
+            lens_name: savedPrompt?.lensName ?? null,
           },
           existingInsights: insights.map((i) => ({ category: i.category, content: i.content })),
           goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description })),
@@ -267,6 +288,23 @@ function NewTabHome() {
                     className={`h-3.5 w-3.5 ${isLiked(prompt.lensId) ? "fill-current" : ""}`}
                   />
                 </button>
+              )}
+              {streak.total > 0 && (
+                <span
+                  className={`ml-auto inline-flex items-center gap-2 normal-case tracking-normal text-[11px] px-2 py-0.5 rounded-full ${
+                    isLight ? "bg-white/15" : "bg-neutral-900/10"
+                  }`}
+                  title={`${streak.points} points · ${streak.total} reflections${streak.streak > 1 ? ` · ${streak.streak}-day streak` : ""}`}
+                >
+                  <Trophy className="h-3 w-3" />
+                  {streak.points} pts
+                  {streak.streak > 1 && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <Flame className="h-3 w-3" />
+                      {streak.streak}
+                    </span>
+                  )}
+                </span>
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight">
