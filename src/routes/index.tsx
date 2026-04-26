@@ -250,6 +250,13 @@ function NewTabHome() {
           <p className={`mt-6 text-center text-xs ${mutedClass}`}>
             A new lens, question, and palette every tab.
           </p>
+          <div className={`mt-3 flex items-center justify-center gap-4 text-[11px] ${mutedClass}`}>
+            <Link to="/privacy" className="underline-offset-4 hover:underline">Privacy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/credits" className="underline-offset-4 hover:underline">
+              Credits & lens attribution
+            </Link>
+          </div>
         </div>
       </main>
     </div>
