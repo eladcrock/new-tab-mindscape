@@ -7,6 +7,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useGoals, useLenses, useReflections } from "@/lib/data-hooks";
 import { generateLensPrompt } from "@/server/lens-agent.functions";
+import { randomGradient, type Gradient } from "@/lib/gradients";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +35,7 @@ function NewTabHome() {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [gradient, setGradient] = useState<Gradient>(() => randomGradient());
   const initialized = useRef(false);
 
   const enabledLenses = lenses.filter((l) => l.enabled);
@@ -44,6 +46,7 @@ function NewTabHome() {
       setLoading(true);
       setAnswer("");
       setReflectionId(null);
+      setGradient((prev) => randomGradient(prev.id));
       try {
         let result: LensPrompt;
 
@@ -116,19 +119,30 @@ function NewTabHome() {
     }
   };
 
+  const isLight = gradient.fg === "light";
+  const fgClass = isLight ? "text-white" : "text-neutral-900";
+  const mutedClass = isLight ? "text-white/70" : "text-neutral-900/60";
+
   return (
-    <div className="relative min-h-screen flex flex-col bg-background text-foreground">
+    <div
+      className={`relative min-h-screen flex flex-col transition-[background] duration-700 ${fgClass}`}
+      style={{ background: gradient.css }}
+    >
       <TopBar />
 
       <main className="flex-1 flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-2xl">
-          <div className="rounded-3xl p-8 sm:p-12 border border-border bg-card shadow-sm">
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <div
+            className={`rounded-3xl p-8 sm:p-12 backdrop-blur-md border shadow-xl ${
+              isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
+            }`}
+          >
+            <div className={`text-xs uppercase tracking-[0.2em] mb-4 ${mutedClass}`}>
               {prompt?.lensName ?? "…"}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight">
               {loading && !prompt ? (
-                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                <span className={`inline-flex items-center gap-2 ${mutedClass}`}>
                   <Loader2 className="h-5 w-5 animate-spin" /> Drawing a lens…
                 </span>
               ) : (
@@ -142,7 +156,11 @@ function NewTabHome() {
                 onChange={(e) => setAnswer(e.target.value)}
                 placeholder="Reflect here… or skip."
                 rows={4}
-                className="resize-none"
+                className={`resize-none border-0 ${
+                  isLight
+                    ? "bg-white/10 text-white placeholder:text-white/50"
+                    : "bg-white/60 text-neutral-900 placeholder:text-neutral-900/40"
+                }`}
                 disabled={!reflectionId || loading}
               />
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -168,8 +186,8 @@ function NewTabHome() {
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            A new lens and question every time you open a tab — Color Hunt for ideas.
+          <p className={`mt-6 text-center text-xs ${mutedClass}`}>
+            A new lens, question, and palette every tab.
           </p>
         </div>
       </main>
