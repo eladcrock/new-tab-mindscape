@@ -122,6 +122,30 @@ function NewTabHome() {
     try {
       await updateAnswer(reflectionId, answer.trim());
       toast.success("Reflection saved");
+      // Background: mine the reflection for personalized, actionable insights.
+      extractInsightsFromReflection({
+        data: {
+          reflection: {
+            question: prompt?.question ?? "",
+            answer: answer.trim(),
+            lens_name: prompt?.lensName ?? null,
+          },
+          existingInsights: insights.map((i) => ({ category: i.category, content: i.content })),
+          goals: goals.filter((g) => g.active).map((g) => ({ title: g.title, description: g.description })),
+        },
+      })
+        .then((r) => {
+          if (r.insights.length > 0) {
+            addInsights(r.insights);
+            const actionable = r.insights.filter((i) => i.category === "next_action").length;
+            toast.success(
+              actionable > 0
+                ? `Agent learned ${r.insights.length} new thing${r.insights.length === 1 ? "" : "s"} (${actionable} actionable)`
+                : `Agent learned ${r.insights.length} new thing${r.insights.length === 1 ? "" : "s"} about you`,
+            );
+          }
+        })
+        .catch((e) => console.warn("reflection insight extraction failed", e));
     } finally {
       setSaving(false);
     }
