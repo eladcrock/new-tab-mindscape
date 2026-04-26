@@ -6,11 +6,14 @@ type LensRef = { id: string; name: string; theme?: string; prompts?: string[] };
 type GoalRef = { title: string; description?: string };
 type ReflectionRef = { question: string; answer?: string | null; lens_name?: string | null };
 
+type LikedLens = { lensId: string; lensName?: string; count: number };
+
 type Input = {
   goals: GoalRef[];
   lenses: LensRef[]; // enabled lens pool
   recentReflections: ReflectionRef[]; // up to ~10
   preferredLensId?: string | null; // randomly pre-picked lens to bias toward
+  likedLenses?: LikedLens[]; // user-liked lenses with strength
 };
 
 type Output = {
@@ -27,12 +30,19 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
       lenses: Array.isArray(input.lenses) ? input.lenses.slice(0, 60) : [],
       recentReflections: Array.isArray(input.recentReflections) ? input.recentReflections.slice(0, 10) : [],
       preferredLensId: typeof input.preferredLensId === "string" ? input.preferredLensId : null,
+      likedLenses: Array.isArray(input.likedLenses)
+        ? input.likedLenses
+            .filter((l) => l && typeof l.lensId === "string" && typeof l.count === "number")
+            .slice(0, 30)
+        : [],
     };
   })
   .handler(async ({ data }): Promise<Output> => {
     await requireUser(getRequest());
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const likeMap = new Map(data.likedLenses.map((l) => [l.lensId, l.count]));
 
     // Randomize lens order so the model sees a different framing each call.
     const shuffled = [...data.lenses].sort(() => Math.random() - 0.5);
@@ -45,7 +55,13 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
       }
     }
 
-    const lensSummary = shuffled.map((l) => `- [${l.id}] ${l.name}${l.theme ? ` — ${l.theme}` : ""}`).join("\n");
+    const lensSummary = shuffled
+      .map((l) => {
+        const likes = likeMap.get(l.id) ?? 0;
+        const tag = likes > 0 ? ` ★liked×${likes}` : "";
+        return `- [${l.id}] ${l.name}${l.theme ? ` — ${l.theme}` : ""}${tag}`;
+      })
+      .join("\n");
     const goalSummary = data.goals.length
       ? data.goals.map((g) => `- ${g.title}${g.description ? `: ${g.description}` : ""}`).join("\n")
       : "(no goals set yet)";
@@ -59,12 +75,23 @@ export const generateLensPrompt = createServerFn({ method: "POST" })
       : "(no past reflections)"
     ;
 
+    const likedSummary = data.likedLenses.length
+      ? data.likedLenses
+          .slice()
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 8)
+          .map((l) => `- ${l.lensName ?? l.lensId} (liked ${l.count}×)`)
+          .join("\n")
+      : "(none yet)";
+
     const preferred = data.preferredLensId
-      ? `Strongly prefer the lens at the top of the list (id: ${data.preferredLensId}) unless it clearly does not fit.`
-      : `Pick whichever lens feels freshest given recent reflections.`;
+      ? `Strongly prefer the lens at the top of the list (id: ${data.preferredLensId}) unless it clearly does not fit. If a top-3 liked lens fits the moment better, you may pick it instead.`
+      : `Pick whichever lens feels freshest given recent reflections. Lean toward the user's liked lenses when relevant, but avoid repeating the same lens back-to-back.`;
 
     const systemPrompt = `You are a thoughtful reflective companion built on Jesse Schell's "Deck of Lenses" concept, adapted for any creative work.
 When the user opens a new tab, you greet them with ONE meaningful, thought-provoking question drawn from their available lenses.
+
+The user's "liked" lenses indicate framings they find personally resonant — treat these as a soft preference signal, not a hard rule. Use them to vary tone and angle, not to monotonously repeat the same lens.
 
 Rules:
 - ${preferred}
