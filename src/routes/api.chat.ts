@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireUser } from "@/server/_auth";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type Body = {
@@ -46,8 +47,10 @@ function buildContextBlock(ctx: Body["context"]): string {
   return parts.length ? parts.join("\n\n") : "(no context yet — get to know them)";
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+// Same-origin only: no Access-Control-Allow-Origin header. The app calls this
+// endpoint from its own origin so CORS is unnecessary, and omitting the wildcard
+// prevents arbitrary third-party sites from invoking it to drain AI credits.
+const baseHeaders = {
   "Access-Control-Allow-Headers": "content-type, authorization",
 };
 
