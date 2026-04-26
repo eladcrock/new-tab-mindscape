@@ -46,7 +46,7 @@ export function TopBar({ textColor, transparent }: Props) {
             style={style}
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline ml-1.5">Sign out</span>
+            <span className="ml-1.5">Sign out</span>
           </Button>
         )}
       </nav>
