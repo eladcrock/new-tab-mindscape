@@ -197,8 +197,25 @@ function NewTabHome() {
               isLight ? "bg-white/10 border-white/20" : "bg-white/40 border-white/60"
             }`}
           >
-            <div className={`text-xs uppercase tracking-[0.2em] mb-4 ${mutedClass}`}>
-              {prompt?.lensName ?? "…"}
+            <div className={`text-xs uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${mutedClass}`}>
+              <span>{prompt?.lensName ?? "…"}</span>
+              {prompt?.lensId && (
+                <button
+                  onClick={async () => {
+                    const liked = await toggleLike(prompt.lensId!, prompt.lensName);
+                    toast.success(liked ? "Liked — we'll show this lens more" : "Removed from liked lenses");
+                  }}
+                  className={`inline-flex items-center justify-center rounded-full p-1 transition ${
+                    isLight ? "hover:bg-white/15" : "hover:bg-neutral-900/10"
+                  }`}
+                  aria-label={isLiked(prompt.lensId) ? "Unlike this lens" : "Like this lens"}
+                  title={isLiked(prompt.lensId) ? "Liked — click to remove" : "Like this lens"}
+                >
+                  <Heart
+                    className={`h-3.5 w-3.5 ${isLiked(prompt.lensId) ? "fill-current" : ""}`}
+                  />
+                </button>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight">
               {loading && !prompt ? (
