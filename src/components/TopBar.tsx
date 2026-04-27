@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { Eye, Target, History as HistoryIcon, LogOut, MessageCircle } from "lucide-react";
+import { Eye, Target, History as HistoryIcon, LogOut, MessageCircle, Wallet } from "lucide-react";
 
 type Props = {
   textColor?: string;
