@@ -1,20 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "bun run build",
-  "outputDirectory": "dist",
-  "framework": null,
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://focalens.lovable.app/api/:path*"
-    },
-    {
-      "source": "/_serverFn/:path*",
-      "destination": "https://focalens.lovable.app/_serverFn/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
