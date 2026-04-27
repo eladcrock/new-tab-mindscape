@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PalettesRouteImport } from './routes/palettes'
 import { Route as LensesRouteImport } from './routes/lenses'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -23,6 +24,11 @@ import { Route as ApiChatRouteImport } from './routes/api.chat'
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PalettesRoute = PalettesRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/lenses': typeof LensesRoute
   '/palettes': typeof PalettesRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/lenses'
     | '/palettes'
+    | '/pricing'
     | '/privacy'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/lenses'
     | '/palettes'
+    | '/pricing'
     | '/privacy'
     | '/api/chat'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/lenses'
     | '/palettes'
+    | '/pricing'
     | '/privacy'
     | '/api/chat'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   LensesRoute: typeof LensesRoute
   PalettesRoute: typeof PalettesRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/palettes': {
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   LensesRoute: LensesRoute,
   PalettesRoute: PalettesRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ApiChatRoute: ApiChatRoute,
 }
