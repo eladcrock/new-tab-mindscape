@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Build
+        run: bun run build
+        env:
+          # Public, safe-to-commit Supabase publishable values used at build time.
+          # These mirror what's already in .env so PR builds succeed.
+          VITE_SUPABASE_URL: https://rgrfmkhatmqzgflnguhh.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJncmZta2hhdG1xemdmbG5ndWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDc5MjEsImV4cCI6MjA5MjcyMzkyMX0.gEGJV4KySM6SzWxmlqFh0KxrtiklFoeWOPwyr39a5CE
+          VITE_SUPABASE_PROJECT_ID: rgrfmkhatmqzgflnguhh
